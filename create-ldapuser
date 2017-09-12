@@ -1,0 +1,43 @@
+cat /etc/services
+
+#Install Packages necessary for LDAP
+yum install authconfig* autofs* sssd* -y
+
+# Authentication COnfig : Opens a Text User Interface
+authconfig-tui
+
+    =>inside the interface select ( Press Spacebar to Select * )
+    Part 1
+      1)select Use LDAP
+      2)select Use LDAP Authentication
+      3)select OK
+    Part 2
+      1)Select Use TLS
+      Server : [your server name] (example - classroom.example.com)
+      Base Domain Name : dc=[your domain name] (example - dc=example,dc=com)
+      2)Select OK
+
+#Authentication Configuration in Graphical Interface
+authconfig-gtk
+
+  >>Download CA Certificate
+  (example - http://classroom.example.com/pub/example-ca.crt)
+  >>Authentication Method : LDAP Password
+  >>APPLY
+  
+
+#The below command would give a bash error
+su - ldapuser
+
+#edit the auto.master file
+vim /etc/auto.master
+      /home/guests /etc/auto.misc
+
+#edit the auto.misc file
+vim /etc/auto.misc
+      ldapuser  -rw,soft,intr classroom.example.com:/home/guests/ldapuser
+      
+systemctl stop autofs
+systemctl start autofs
+systemctl enable autofs
+systemctl restart sssd
